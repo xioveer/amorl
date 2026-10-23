@@ -1,4 +1,4 @@
-<title>Perdóname</title>
+<title>Perdóname, María Fernanda</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Karla:wght@400;500;700&display=swap">
 <style>
@@ -225,20 +225,15 @@
 <section class="capa" id="escena-carta" hidden>
   <article class="final">
     <h1>Perdóname</h1>
-    <p class="nombre-linea" id="nombre-linea">Para ti</p>
+    <p class="nombre-linea">Para María Fernanda</p>
 
-    <p>No sé qué pude haber hecho para ponerte de mal humor, pero perdóname igual. Lo que menos quiero en esta vida es eso.</p>
+    <p>Lo que menos quiero en esta vida es verte de mal humor por algo mío. Perdóname.</p>
     <p>Quiero que estés feliz. Y quiero que estés feliz conmigo, no cada uno por su lado aguantando lo que sentimos y no nos decimos.</p>
     <p>Prefiero mil veces que me digas lo que te molestó, aunque me duela oírlo, a que te lo guardes. Guardado se hace grande solo, y yo ni cuenta me doy.</p>
     <p>No quiero tener la razón. Quiero tenerte bien. Si me equivoqué, dime dónde y lo cambio, no por quedar bien contigo, sino porque me importas tú.</p>
     <p class="fuerte">Si hago estas cosas por ti no es para que me quieras. Es para que sepas que yo te quiero mucho.</p>
 
     <p class="firma">Aquí estoy, cuando quieras.</p>
-
-    <div class="campo">
-      <label for="nombre">Su nombre</label>
-      <input id="nombre" type="text" placeholder="escríbelo aquí" autocomplete="off" maxlength="24">
-    </div>
 
     <div class="acciones">
       <button class="si" id="copiar" type="button">Copiar el mensaje</button>
@@ -255,28 +250,23 @@
 
   /* ---------------- gatos ---------------- */
   var pasos = [
-    { img: 'img/gato-perdon.png', alt: 'Gatito con una flor diciendo perdón',
-      globo: 'Perdóname\u2026',
+    { img: 'img/gato-perdon.png', alt: 'Gatito con una flor diciendo perd\u00f3n',
+      globo: 'Mar\u00eda Fernanda, perd\u00f3name\u2026',
       pregunta: '\u00bfMe perdonas?',
       si: 'S\u00ed', no: 'No',
       pistas: ['ese bot\u00f3n no sirve', 'se mueve solito, no es culpa m\u00eda', 'de verdad, solo hay un bot\u00f3n'] },
-    { img: 'img/gato-rosado.png', alt: 'Gatito rosado con corazones',
-      globo: 'No s\u00e9 qu\u00e9 hice para ponerte de mal humor, pero perd\u00f3name igual.',
+    { img: 'img/gato-cerca.png', alt: 'Carita de gato muy de cerca',
+      globo: 'Lo que menos quiero en esta vida es verte as\u00ed.',
       pregunta: '\u00bfSegura que me perdonas?',
       si: 'S\u00ed, segura', no: 'No',
       pistas: ['uy, se escap\u00f3', 'creo que ese bot\u00f3n te tiene miedo'] },
-    { img: 'img/gato-cerca.png', alt: 'Carita de gato muy de cerca',
-      globo: 'Lo que menos quiero en esta vida es verte as\u00ed.',
-      pregunta: '\u00bfSegura segura?',
-      si: 'Segur\u00edsima', no: 'No',
-      pistas: ['nop', 'sigue intentando, igual no se deja'] },
     { img: 'img/gato-corazones.png', alt: 'Gatito con corazones',
       globo: 'Quiero que estemos bien los dos, no cada uno por su lado.',
       pregunta: '\u00bfAunque sea un poquito?',
       si: 'Un mont\u00f3n', no: 'No',
-      pistas: ['ese bot\u00f3n est\u00e1 de vacaciones'] },
-    { img: 'img/gato-corazones.png', alt: 'Gatito feliz con corazones',
-      globo: '\u00a1Gracias! De verdad, gracias.',
+      pistas: ['ese bot\u00f3n est\u00e1 de vacaciones', 'nop, ese no se deja'] },
+    { img: 'img/gato-rosado.png', alt: 'Gatito rosado feliz con corazones',
+      globo: '\u00a1Gracias, mi amor! De verdad, gracias.',
       pregunta: 'Te hice algo, mira el cielo.',
       si: 'Ver el cielo', no: null,
       pistas: [] }
@@ -552,7 +542,7 @@
     for (var k = 0; k < n; k++){
       var a = (k / n) * 6.283 + Math.random() * 0.2;
       var vel = 90 + Math.random() * 140;
-      chispa(x, y, Math.cos(a) * vel, Math.sin(a) * vel, Math.random() < 0.34 ? 'fresa' : 'corazon', 2.4 + Math.random());
+      chispa(x, y, Math.cos(a) * vel, Math.sin(a) * vel, Math.random() < 0.55 ? 'fresa' : 'corazon', 2.4 + Math.random());
     }
   }
 
@@ -674,7 +664,8 @@
       }
     }
 
-    if (fase === 'carta' && !reducido && Math.random() < dt * 1.5) lanzarFuego();
+    if (!reducido && (fase === 'carta' || fase === 'gatos')
+        && Math.random() < dt * (fase === 'gatos' ? 1.1 : 1.6)) lanzarFuego();
     for (var cr = cohetes.length - 1; cr >= 0; cr--){
       var co = cohetes[cr];
       co.y += co.vy * dt; co.vy += 420 * dt;
@@ -705,7 +696,7 @@
     [4.6, 8.6, 'A veces se alejan sin darse cuenta.'],
     [8.6, 12.5, 'Yo no quiero que nos pase eso.'],
     [12.5, 17.2, 'Prefiero mil veces encontrarnos.'],
-    [17.2, 21, 'Te quiero mucho. Lee esto, por favor.']
+    [17.2, 21, 'Te quiero mucho, María Fernanda.']
   ];
   function sincronizar(){
     if (fase !== 'espacio'){ elFrase.classList.remove('viva'); return; }
@@ -749,24 +740,11 @@
   }
 
   /* ---------------- carta ---------------- */
-  var nombre = document.getElementById('nombre');
-  var linea = document.getElementById('nombre-linea');
-  function pintarNombre(){
-    var v = nombre.value.trim();
-    linea.textContent = v ? 'Para ' + v : 'Para ti';
-    try { localStorage.setItem('nombre-perdon', v); } catch (e) {}
-  }
-  try { var gv = localStorage.getItem('nombre-perdon'); if (gv) nombre.value = gv; } catch (e) {}
-  pintarNombre();
-  nombre.addEventListener('input', pintarNombre);
-
   var aviso = document.getElementById('aviso');
   document.getElementById('copiar').addEventListener('click', function(){
-    var v = nombre.value.trim();
-    var texto = (v ? v + ', p' : 'P') + 'erdóname. No sé qué pude haber hecho para ponerte de mal humor, '
-      + 'pero perdóname igual: lo que menos quiero en esta vida es eso. Quiero que estés feliz, y que estés feliz conmigo, '
-      + 'no cada uno por su lado aguantando lo que no nos decimos. Si hago estas cosas por ti no es para que me quieras, '
-      + 'es para que sepas que yo te quiero mucho.';
+    var texto = 'María Fernanda, perdóname. Lo que menos quiero en esta vida es verte de mal humor por algo mío. '
+      + 'Quiero que estés feliz, y que estés feliz conmigo, no cada uno por su lado aguantando lo que no nos decimos. '
+      + 'Si hago estas cosas por ti no es para que me quieras, es para que sepas que yo te quiero mucho.';
     if (navigator.clipboard && navigator.clipboard.writeText){
       navigator.clipboard.writeText(texto).then(function(){
         aviso.textContent = 'Copiado, ya puedes enviárselo.';
