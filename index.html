@@ -1,0 +1,788 @@
+<title>Perdóname</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Karla:wght@400;500;700&display=swap">
+<style>
+  /* Escena a pantalla completa: cielo en canvas al fondo, gatos y carta como capas encima */
+  :root{
+    --espacio:#05040e;
+    --fresa:#ff3f63;
+    --rosa:#ffa8c3;
+    --violeta:#9b85ff;
+    --crema:#fff4ec;
+    --tenue:#b5aac9;
+    --borde:#2b2246;
+    --display:'Gloock','Iowan Old Style',Georgia,serif;
+    --texto:'Karla',system-ui,-apple-system,'Segoe UI',sans-serif;
+    color-scheme: dark;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    background:var(--espacio);
+    color:var(--crema);
+    font-family:var(--texto);
+    font-size:16px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  #cielo{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0}
+  .capa{
+    position:relative;
+    z-index:1;
+    min-height:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding-left:max(16px,env(safe-area-inset-left,0px));
+    padding-right:max(16px,env(safe-area-inset-right,0px));
+    padding-block:28px;
+  }
+
+  /* ---- gatos ---- */
+  .gato-paso{
+    width:100%;
+    max-width:430px;
+    text-align:center;
+    position:relative;
+  }
+  .globo{
+    position:relative;
+    background:rgba(255,244,236,.96);
+    color:#241a33;
+    border-radius:20px;
+    padding:16px 20px;
+    font-family:var(--display);
+    font-size:clamp(1.05rem,4.2vw,1.35rem);
+    line-height:1.35;
+    text-wrap:balance;
+    box-shadow:0 18px 50px rgba(0,0,0,.45);
+  }
+  .globo::after{
+    content:"";
+    position:absolute;
+    left:50%;bottom:-11px;
+    width:22px;height:22px;
+    background:rgba(255,244,236,.96);
+    transform:translateX(-50%) rotate(45deg);
+    border-radius:0 0 5px 0;
+  }
+  .gato{
+    display:block;
+    margin:18px auto 4px;
+    width:min(230px,60vw);
+    height:auto;
+    background:#fff;
+    border-radius:26px;
+    padding:8px;
+    box-shadow:0 18px 44px rgba(0,0,0,.5);
+    animation:flota 3.4s ease-in-out infinite;
+  }
+  @keyframes flota{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-10px) rotate(1.5deg)}}
+  @media (prefers-reduced-motion:reduce){.gato{animation:none}}
+  .pregunta{
+    margin-top:14px;
+    font-size:1.02rem;
+    color:var(--crema);
+  }
+  .botonera{
+    position:relative;
+    min-height:120px;
+    margin-top:10px;
+  }
+  .fila{
+    display:flex;
+    gap:14px;
+    justify-content:center;
+    align-items:center;
+  }
+  button{
+    font:inherit;font-weight:700;
+    border-radius:999px;
+    border:1px solid var(--borde);
+    background:rgba(255,255,255,.05);
+    color:var(--crema);
+    padding:11px 24px;
+    cursor:pointer;
+    transition:background .2s ease,border-color .2s ease,transform .18s ease;
+  }
+  button:hover{border-color:var(--rosa)}
+  button:focus-visible{outline:2px solid var(--rosa);outline-offset:3px}
+  .si{
+    background:linear-gradient(180deg,#ff5c7c,#e0234c);
+    border-color:transparent;color:#fff;
+    box-shadow:0 10px 26px rgba(255,63,99,.35);
+  }
+  .no{position:relative;will-change:transform}
+  .pista{
+    display:block;
+    min-height:1.4em;
+    margin-top:10px;
+    font-size:.85rem;
+    color:var(--rosa);
+  }
+
+  /* ---- carta final ---- */
+  .final{
+    width:100%;
+    max-width:600px;
+    background:linear-gradient(180deg,rgba(23,16,41,.92),rgba(16,11,32,.94));
+    border:1px solid var(--borde);
+    border-radius:22px;
+    padding:30px 24px 26px;
+    backdrop-filter:blur(6px);
+    box-shadow:0 30px 80px rgba(0,0,0,.6);
+  }
+  .final h1{
+    font-family:var(--display);
+    font-weight:400;
+    font-size:clamp(1.7rem,6vw,2.3rem);
+    line-height:1.15;
+    margin:0 0 6px;
+    color:var(--rosa);
+    text-wrap:balance;
+  }
+  .final .nombre-linea{
+    font-size:.78rem;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--tenue);
+    margin:0 0 20px;
+  }
+  .final p{margin:0 0 14px;color:#efe6f5}
+  .final p.fuerte{color:#fff;font-weight:500}
+  .firma{
+    margin-top:22px;
+    font-family:var(--display);
+    font-size:1.15rem;
+    color:var(--rosa);
+  }
+  .acciones{
+    display:flex;flex-wrap:wrap;gap:10px;justify-content:center;
+    margin-top:22px;
+  }
+  .campo{
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+    margin:18px 0 0;padding-top:16px;border-top:1px solid var(--borde);
+  }
+  .campo label{font-size:.74rem;text-transform:uppercase;letter-spacing:.14em;color:var(--tenue)}
+  .campo input{
+    flex:1 1 170px;min-width:0;font:inherit;color:var(--crema);
+    background:rgba(255,255,255,.05);border:1px solid var(--borde);
+    border-radius:10px;padding:8px 12px;
+  }
+  .campo input:focus{outline:2px solid var(--rosa);outline-offset:1px}
+  .aviso{display:block;min-height:1.3em;margin-top:10px;font-size:.85rem;color:var(--rosa);text-align:center}
+  .frase-espacio{
+    position:fixed;
+    left:max(18px,env(safe-area-inset-left,0px));
+    right:max(18px,env(safe-area-inset-right,0px));
+    bottom:calc(34px + env(safe-area-inset-bottom,0px));
+    z-index:2;
+    margin:0;
+    text-align:center;
+    font-family:var(--display);
+    font-size:clamp(1.1rem,3.6vw,1.75rem);
+    text-wrap:balance;
+    opacity:0;
+    transform:translateY(12px);
+    transition:opacity .9s ease,transform .9s ease;
+    pointer-events:none;
+    text-shadow:0 2px 24px rgba(0,0,0,.8);
+  }
+  .frase-espacio.viva{opacity:1;transform:none}
+  [hidden]{display:none!important}
+  @media (prefers-reduced-motion:reduce){
+    .frase-espacio,.globo,button{transition:none}
+  }
+</style>
+
+<canvas id="cielo" aria-label="Cielo con estrellas y planetas"></canvas>
+
+<!-- ============ GATOS ============ -->
+<section class="capa" id="escena-gatos">
+  <div class="gato-paso">
+    <div class="globo" id="globo">Perdóname…</div>
+
+    <img class="gato" id="gato" src="img/gato-perdon.png" alt="Gatito pidiendo perdón con una flor">
+
+    <p class="pregunta" id="pregunta">¿Me perdonas?</p>
+
+    <div class="botonera" id="botonera">
+      <div class="fila">
+        <button class="si" id="btn-si" type="button">Sí</button>
+        <button class="no" id="btn-no" type="button">No</button>
+      </div>
+      <span class="pista" id="pista"></span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ESPACIO ============ -->
+<p class="frase-espacio" id="frase"></p>
+
+<!-- ============ CARTA ============ -->
+<section class="capa" id="escena-carta" hidden>
+  <article class="final">
+    <h1>Perdóname</h1>
+    <p class="nombre-linea" id="nombre-linea">Para ti</p>
+
+    <p>No sé qué pude haber hecho para ponerte de mal humor, pero perdóname igual. Lo que menos quiero en esta vida es eso.</p>
+    <p>Quiero que estés feliz. Y quiero que estés feliz conmigo, no cada uno por su lado aguantando lo que sentimos y no nos decimos.</p>
+    <p>Prefiero mil veces que me digas lo que te molestó, aunque me duela oírlo, a que te lo guardes. Guardado se hace grande solo, y yo ni cuenta me doy.</p>
+    <p>No quiero tener la razón. Quiero tenerte bien. Si me equivoqué, dime dónde y lo cambio, no por quedar bien contigo, sino porque me importas tú.</p>
+    <p class="fuerte">Si hago estas cosas por ti no es para que me quieras. Es para que sepas que yo te quiero mucho.</p>
+
+    <p class="firma">Aquí estoy, cuando quieras.</p>
+
+    <div class="campo">
+      <label for="nombre">Su nombre</label>
+      <input id="nombre" type="text" placeholder="escríbelo aquí" autocomplete="off" maxlength="24">
+    </div>
+
+    <div class="acciones">
+      <button class="si" id="copiar" type="button">Copiar el mensaje</button>
+      <button id="repetir" type="button">Verlo otra vez</button>
+    </div>
+    <span class="aviso" id="aviso" role="status"></span>
+  </article>
+</section>
+
+<script>
+(function(){
+  "use strict";
+  var reducido = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------------- gatos ---------------- */
+  var pasos = [
+    { img: 'img/gato-perdon.png', alt: 'Gatito con una flor diciendo perdón',
+      globo: 'Perdóname\u2026',
+      pregunta: '\u00bfMe perdonas?',
+      si: 'S\u00ed', no: 'No',
+      pistas: ['ese bot\u00f3n no sirve', 'se mueve solito, no es culpa m\u00eda', 'de verdad, solo hay un bot\u00f3n'] },
+    { img: 'img/gato-rosado.png', alt: 'Gatito rosado con corazones',
+      globo: 'No s\u00e9 qu\u00e9 hice para ponerte de mal humor, pero perd\u00f3name igual.',
+      pregunta: '\u00bfSegura que me perdonas?',
+      si: 'S\u00ed, segura', no: 'No',
+      pistas: ['uy, se escap\u00f3', 'creo que ese bot\u00f3n te tiene miedo'] },
+    { img: 'img/gato-cerca.png', alt: 'Carita de gato muy de cerca',
+      globo: 'Lo que menos quiero en esta vida es verte as\u00ed.',
+      pregunta: '\u00bfSegura segura?',
+      si: 'Segur\u00edsima', no: 'No',
+      pistas: ['nop', 'sigue intentando, igual no se deja'] },
+    { img: 'img/gato-corazones.png', alt: 'Gatito con corazones',
+      globo: 'Quiero que estemos bien los dos, no cada uno por su lado.',
+      pregunta: '\u00bfAunque sea un poquito?',
+      si: 'Un mont\u00f3n', no: 'No',
+      pistas: ['ese bot\u00f3n est\u00e1 de vacaciones'] },
+    { img: 'img/gato-corazones.png', alt: 'Gatito feliz con corazones',
+      globo: '\u00a1Gracias! De verdad, gracias.',
+      pregunta: 'Te hice algo, mira el cielo.',
+      si: 'Ver el cielo', no: null,
+      pistas: [] }
+  ];
+
+  var i = 0, esquives = 0;
+  var elGato = document.getElementById('gato');
+  var elGlobo = document.getElementById('globo');
+  var elPreg = document.getElementById('pregunta');
+  var elSi = document.getElementById('btn-si');
+  var elNo = document.getElementById('btn-no');
+  var elPista = document.getElementById('pista');
+  var botonera = document.getElementById('botonera');
+
+  function pintarPaso(){
+    var p = pasos[i];
+    elGato.src = p.img;
+    elGato.alt = p.alt;
+    elGlobo.textContent = p.globo;
+    elPreg.textContent = p.pregunta;
+    elSi.textContent = p.si;
+    elPista.textContent = '';
+    elSi.style.transform = 'none';
+    elNo.style.transform = 'none';
+    elNo.hidden = !p.no;
+    if (p.no) elNo.textContent = p.no;
+    esquives = 0;
+  }
+
+  function esquivar(ev){
+    if (ev) { ev.preventDefault(); }
+    var caja = botonera.getBoundingClientRect();
+    var b = elNo.getBoundingClientRect();
+    var maxX = Math.max(30, caja.width / 2 - b.width / 2 - 6);
+    var maxY = 46;
+    var x = (Math.random() * 2 - 1) * maxX;
+    var y = (Math.random() * 2 - 1) * maxY;
+    elNo.style.transform = 'translate(' + x.toFixed(0) + 'px,' + y.toFixed(0) + 'px) rotate(' + ((Math.random() * 24) - 12).toFixed(0) + 'deg)';
+    esquives++;
+    var lista = pasos[i].pistas;
+    if (lista.length) elPista.textContent = lista[Math.min(esquives - 1, lista.length - 1)];
+    var escala = Math.min(1.22, 1 + esquives * 0.045);
+    elSi.style.transform = 'scale(' + escala.toFixed(2) + ')';
+  }
+  ['pointerenter', 'pointerdown', 'mouseover', 'touchstart', 'focus', 'click'].forEach(function(ev){
+    elNo.addEventListener(ev, esquivar, { passive: false });
+  });
+
+  elSi.addEventListener('click', function(){
+    if (i < pasos.length - 1){ i++; pintarPaso(); }
+    else { alEspacio(); }
+  });
+  pintarPaso();
+
+  /* ---------------- cielo ---------------- */
+  var cv = document.getElementById('cielo');
+  var ctx = cv.getContext('2d');
+  var W = 0, H = 0, DPR = 1;
+  var capas = [], polvo = [], fugaz = null, chispas = [], cohetes = [];
+  var fase = 'gatos', t = 0, ultimo = 0, estallado = false;
+  var FUSION = 12.5, VIAJE = 14.2, CARTA = 21;
+
+  function h2(x, y, s){
+    var n = Math.sin(x * 127.1 + y * 311.7 + s * 74.7) * 43758.5453;
+    return n - Math.floor(n);
+  }
+  function ruido(x, y, per, s){
+    var xi = Math.floor(x), yi = Math.floor(y);
+    var xf = x - xi, yf = y - yi;
+    var u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+    function g(a, b){ return h2(((a % per) + per) % per, b, s); }
+    var a = g(xi, yi), b = g(xi + 1, yi), c = g(xi, yi + 1), d = g(xi + 1, yi + 1);
+    return (a * (1 - u) + b * u) * (1 - v) + (c * (1 - u) + d * u) * v;
+  }
+  function fbm(x, y, per, s){
+    var v = 0, amp = 0.5, f = 1;
+    for (var o = 0; o < 5; o++){
+      v += amp * ruido(x * f, y * f, per * f, s + o * 17);
+      amp *= 0.5; f *= 2;
+    }
+    return v;
+  }
+  function mezcla(c1, c2, k){
+    return [c1[0] + (c2[0] - c1[0]) * k, c1[1] + (c2[1] - c1[1]) * k, c1[2] + (c2[2] - c1[2]) * k];
+  }
+
+  // textura esférica (y ya proyectada con arcoseno para que el mapeo sea correcto)
+  function textura(mar, tierra, alto, nube, semilla, escala){
+    var TW = 256, TH = 128;
+    var c = document.createElement('canvas');
+    c.width = TW; c.height = TH;
+    var cx = c.getContext('2d');
+    var im = cx.createImageData(TW, TH);
+    var d = im.data, per = 8;
+    for (var y = 0; y < TH; y++){
+      var sy = ((y + 0.5) / TH) * 2 - 1;
+      var lat = Math.asin(Math.max(-1, Math.min(1, sy)));
+      var fy = (lat / (Math.PI / 2)) * 3.2;
+      for (var x = 0; x < TW; x++){
+        var fx = (x / TW) * per;
+        var n = fbm(fx * escala, fy * escala, per * escala, semilla);
+        var col;
+        if (n < 0.46) col = mezcla(mar, mezcla(mar, tierra, 0.25), n / 0.46);
+        else if (n < 0.58) col = mezcla(tierra, alto, (n - 0.46) / 0.12);
+        else col = mezcla(alto, [255, 248, 240], Math.min(1, (n - 0.58) / 0.3));
+        var hielo = Math.max(0, Math.abs(sy) - 0.78) / 0.22;
+        if (hielo > 0) col = mezcla(col, [240, 238, 252], Math.min(1, hielo * 1.2));
+        var nu = fbm(fx * 1.6 + 30, fy * 1.6, per * 1.6, semilla + 99);
+        if (nu > 0.56) col = mezcla(col, nube, Math.min(0.85, (nu - 0.56) * 2.6));
+        var k = (y * TW + x) * 4;
+        d[k] = col[0]; d[k + 1] = col[1]; d[k + 2] = col[2]; d[k + 3] = 255;
+      }
+    }
+    cx.putImageData(im, 0, 0);
+    return c;
+  }
+
+  var texRosa = null, texAzul = null, texUno = null, texNebula = null;
+  function prepararTexturas(){
+    texRosa = textura([126, 26, 58], [214, 70, 97], [255, 150, 173], [255, 240, 244], 3, 1.0);
+    texAzul = textura([22, 24, 86], [70, 60, 170], [150, 140, 255], [236, 236, 255], 11, 1.1);
+    texUno  = textura([96, 28, 92], [196, 64, 122], [255, 164, 196], [255, 236, 248], 7, 0.9);
+  }
+
+  function nebulosa(){
+    var c = document.createElement('canvas');
+    var NW = 220, NH = 140;
+    c.width = NW; c.height = NH;
+    var cx = c.getContext('2d');
+    var im = cx.createImageData(NW, NH);
+    var d = im.data;
+    for (var y = 0; y < NH; y++){
+      for (var x = 0; x < NW; x++){
+        var n = fbm(x / 26, y / 26, 64, 21);
+        var m = fbm(x / 12 + 5, y / 12, 64, 44);
+        var a = Math.max(0, n * 1.5 - 0.55) * 255;
+        var k = (y * NW + x) * 4;
+        d[k] = 120 + m * 135;
+        d[k + 1] = 40 + n * 70;
+        d[k + 2] = 150 + n * 105;
+        d[k + 3] = Math.min(150, a * 0.75);
+      }
+    }
+    cx.putImageData(im, 0, 0);
+    return c;
+  }
+
+  function sembrarEstrellas(){
+    capas = [];
+    var def = [[0.35, 0.9, 1], [0.7, 1.4, 1.9], [1.3, 1.9, 3.2]];
+    for (var c = 0; c < 3; c++){
+      var lista = [], n = Math.round((W * H) / (c === 2 ? 26000 : c === 1 ? 11000 : 5200));
+      for (var i2 = 0; i2 < n; i2++){
+        lista.push({
+          x: Math.random() * W, y: Math.random() * H,
+          r: def[c][1] * (0.6 + Math.random() * 0.8),
+          f: Math.random() * 6.28, v: 0.4 + Math.random() * 1.6,
+          p: def[c][0],
+          tono: Math.random() < 0.12 ? '#ffd3e0' : (Math.random() < 0.2 ? '#cfe0ff' : '#f3efff')
+        });
+      }
+      capas.push(lista);
+    }
+    polvo = [];
+    for (var p = 0; p < 40; p++){
+      polvo.push({ x: Math.random() * W, y: Math.random() * H, r: 0.6 + Math.random() * 1.6,
+        vx: -4 - Math.random() * 10, vy: (Math.random() - 0.5) * 4, a: 0.08 + Math.random() * 0.22 });
+    }
+  }
+
+  function medir(){
+    DPR = Math.min(2, window.devicePixelRatio || 1);
+    W = window.innerWidth; H = window.innerHeight;
+    cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    sembrarEstrellas();
+  }
+
+  function suave(p){ p = Math.max(0, Math.min(1, p)); return p * p * (3 - 2 * p); }
+
+  function dibujarPlaneta(tex, x, y, r, giro, atm){
+    // halo de atmósfera
+    var g = ctx.createRadialGradient(x, y, r * 0.95, x, y, r * 1.55);
+    g.addColorStop(0, atm.replace('ALFA', '.5'));
+    g.addColorStop(0.45, atm.replace('ALFA', '.16'));
+    g.addColorStop(1, atm.replace('ALFA', '0'));
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(x, y, r * 1.55, 0, 6.3); ctx.fill();
+
+    ctx.save();
+    ctx.beginPath(); ctx.arc(x, y, r, 0, 6.3); ctx.clip();
+    var N = 56, TW = tex.width;
+    for (var s = 0; s < N; s++){
+      var th1 = -Math.PI / 2 + Math.PI * s / N;
+      var th2 = -Math.PI / 2 + Math.PI * (s + 1) / N;
+      var x1 = x + r * Math.sin(th1), x2 = x + r * Math.sin(th2);
+      var u = (((th1 + giro) / (2 * Math.PI)) % 1 + 1) % 1;
+      var sw = TW / (2 * N);
+      ctx.drawImage(tex, u * TW, 0, sw, tex.height, x1 - 0.6, y - r, (x2 - x1) + 1.2, r * 2);
+    }
+    // sombra / terminador
+    var sh = ctx.createRadialGradient(x - r * 0.45, y - r * 0.5, r * 0.1, x + r * 0.25, y + r * 0.3, r * 1.45);
+    sh.addColorStop(0, 'rgba(255,245,235,.18)');
+    sh.addColorStop(0.38, 'rgba(0,0,0,0)');
+    sh.addColorStop(1, 'rgba(3,2,10,.92)');
+    ctx.fillStyle = sh;
+    ctx.fillRect(x - r, y - r, r * 2, r * 2);
+    // borde iluminado
+    ctx.globalCompositeOperation = 'lighter';
+    var rim = ctx.createRadialGradient(x, y, r * 0.86, x, y, r);
+    rim.addColorStop(0, 'rgba(0,0,0,0)');
+    rim.addColorStop(1, atm.replace('ALFA', '.55'));
+    ctx.fillStyle = rim;
+    ctx.beginPath(); ctx.arc(x, y, r, 0, 6.3); ctx.fill();
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.restore();
+  }
+
+  function anillo(x, y, r, alfa){
+    ctx.save(); ctx.globalAlpha = alfa;
+    ctx.translate(x, y); ctx.rotate(-0.34);
+    var g = ctx.createLinearGradient(-r * 2, 0, r * 2, 0);
+    g.addColorStop(0, 'rgba(255,168,195,0)');
+    g.addColorStop(0.32, 'rgba(255,168,195,.8)');
+    g.addColorStop(0.68, 'rgba(155,133,255,.8)');
+    g.addColorStop(1, 'rgba(155,133,255,0)');
+    ctx.strokeStyle = g; ctx.lineWidth = Math.max(1.6, r * 0.085);
+    ctx.beginPath(); ctx.ellipse(0, 0, r * 1.9, r * 0.5, 0, 0, 6.3); ctx.stroke();
+    ctx.restore();
+  }
+
+  function corazon(x, y, s, rot, color, alfa){
+    ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.scale(s, s);
+    ctx.globalAlpha = alfa; ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(0, 0.38);
+    ctx.bezierCurveTo(-0.62, -0.12, -0.46, -0.82, 0, -0.44);
+    ctx.bezierCurveTo(0.46, -0.82, 0.62, -0.12, 0, 0.38);
+    ctx.closePath(); ctx.fill(); ctx.restore();
+  }
+  function fresa(x, y, s, rot, alfa){
+    ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.scale(s, s);
+    ctx.globalAlpha = alfa;
+    ctx.fillStyle = '#ff3b5c';
+    ctx.beginPath();
+    ctx.moveTo(0, 0.6);
+    ctx.bezierCurveTo(-0.58, 0.16, -0.52, -0.44, 0, -0.4);
+    ctx.bezierCurveTo(0.52, -0.44, 0.58, 0.16, 0, 0.6);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#4fd18b';
+    ctx.beginPath();
+    ctx.moveTo(-0.42, -0.5); ctx.lineTo(0, -0.34); ctx.lineTo(0.42, -0.5);
+    ctx.lineTo(0.2, -0.62); ctx.lineTo(0, -0.78); ctx.lineTo(-0.2, -0.62);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#fff3ea';
+    var pe = [[-0.2, -0.08], [0.18, 0], [0, 0.2], [-0.22, 0.24], [0.24, 0.26]];
+    for (var i3 = 0; i3 < pe.length; i3++){
+      ctx.beginPath(); ctx.ellipse(pe[i3][0], pe[i3][1], 0.07, 0.1, 0, 0, 6.3); ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function chispa(x, y, vx, vy, tipo, vida){
+    chispas.push({ x: x, y: y, vx: vx, vy: vy, vida: 0, max: vida || (1.8 + Math.random() * 1.6),
+      s: 7 + Math.random() * 9, rot: Math.random() * 6.28, giro: (Math.random() - 0.5) * 3, tipo: tipo });
+  }
+  function lanzarFuego(){
+    cohetes.push({ x: W * (0.12 + Math.random() * 0.76), y: H + 10,
+      vy: -(H * 0.55 + Math.random() * H * 0.2), meta: H * (0.16 + Math.random() * 0.3) });
+  }
+  function estallar(x, y){
+    var n = 16 + Math.floor(Math.random() * 12);
+    for (var k = 0; k < n; k++){
+      var a = (k / n) * 6.283 + Math.random() * 0.2;
+      var vel = 90 + Math.random() * 140;
+      chispa(x, y, Math.cos(a) * vel, Math.sin(a) * vel, Math.random() < 0.34 ? 'fresa' : 'corazon', 2.4 + Math.random());
+    }
+  }
+
+  function pintar(dt){
+    ctx.clearRect(0, 0, W, H);
+    var f = ctx.createLinearGradient(0, 0, W * 0.4, H);
+    f.addColorStop(0, '#0a0718'); f.addColorStop(0.5, '#120c24'); f.addColorStop(1, '#05040e');
+    ctx.fillStyle = f; ctx.fillRect(0, 0, W, H);
+
+    if (texNebula){
+      ctx.save();
+      ctx.globalAlpha = 0.5; ctx.globalCompositeOperation = 'screen';
+      ctx.drawImage(texNebula, -W * 0.1, -H * 0.05, W * 0.95, H * 0.8);
+      ctx.globalAlpha = 0.34;
+      ctx.drawImage(texNebula, W * 0.35, H * 0.3, W * 0.8, H * 0.75);
+      ctx.restore();
+    }
+
+    var vel = fase === 'espacio' && t > VIAJE ? Math.min(1, (t - VIAJE) / 2.4) : 0;
+    for (var c = 0; c < capas.length; c++){
+      var L = capas[c];
+      for (var i4 = 0; i4 < L.length; i4++){
+        var e = L[i4];
+        if (!reducido) e.x -= (2 + e.p * 10 + vel * 180 * e.p) * dt;
+        if (e.x < -8) { e.x += W + 16; e.y = Math.random() * H; }
+        var br = 0.35 + 0.65 * Math.abs(Math.sin(t * e.v + e.f));
+        ctx.globalAlpha = br * (0.5 + e.p * 0.5);
+        ctx.fillStyle = e.tono;
+        if (vel > 0.3 && c === 2){
+          ctx.fillRect(e.x, e.y, e.r * (1 + vel * 14 * e.p), e.r * 0.9);
+        } else {
+          ctx.beginPath(); ctx.arc(e.x, e.y, e.r, 0, 6.3); ctx.fill();
+        }
+        if (c === 2 && br > 0.92){
+          ctx.globalAlpha = (br - 0.92) * 3;
+          ctx.fillRect(e.x - e.r * 3, e.y - e.r * 0.2, e.r * 6, e.r * 0.4);
+          ctx.fillRect(e.x - e.r * 0.2, e.y - e.r * 3, e.r * 0.4, e.r * 6);
+        }
+      }
+    }
+    ctx.globalAlpha = 1;
+
+    for (var d2 = 0; d2 < polvo.length; d2++){
+      var pv = polvo[d2];
+      if (!reducido){ pv.x += pv.vx * dt; pv.y += pv.vy * dt; }
+      if (pv.x < -5) pv.x = W + 5;
+      if (pv.y < -5) pv.y = H + 5; if (pv.y > H + 5) pv.y = -5;
+      ctx.globalAlpha = pv.a;
+      ctx.fillStyle = '#d8c9ff';
+      ctx.beginPath(); ctx.arc(pv.x, pv.y, pv.r, 0, 6.3); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    if (!reducido){
+      if (!fugaz && Math.random() < dt * 0.22){
+        fugaz = { x: Math.random() * W * 0.7, y: Math.random() * H * 0.45, v: 520 + Math.random() * 380, vida: 0 };
+      }
+      if (fugaz){
+        fugaz.vida += dt;
+        fugaz.x += fugaz.v * dt; fugaz.y += fugaz.v * 0.42 * dt;
+        var al = Math.max(0, 1 - fugaz.vida / 1.1);
+        var gx = ctx.createLinearGradient(fugaz.x - 150, fugaz.y - 63, fugaz.x, fugaz.y);
+        gx.addColorStop(0, 'rgba(255,255,255,0)');
+        gx.addColorStop(1, 'rgba(255,236,245,' + (al * 0.9) + ')');
+        ctx.strokeStyle = gx; ctx.lineWidth = 2; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(fugaz.x - 150, fugaz.y - 63); ctx.lineTo(fugaz.x, fugaz.y); ctx.stroke();
+        if (fugaz.vida > 1.2 || fugaz.x > W + 160) fugaz = null;
+      }
+    }
+
+    if (fase === 'espacio' && texRosa){
+      var cy = H * 0.46;
+      var r = Math.max(34, Math.min(W, H) * 0.13);
+      if (t < FUSION){
+        var p = suave((t - 4.4) / (FUSION - 4.4));
+        var ax = W * (0.25 + 0.245 * p), bx = W * (0.75 - 0.245 * p);
+        var ola = Math.sin(t * 0.75) * H * 0.022 * (1 - p);
+        dibujarPlaneta(texAzul, bx, cy - ola, r * 0.94, t * 0.16, 'rgba(150,140,255,ALFA)');
+        dibujarPlaneta(texRosa, ax, cy + ola, r, -t * 0.2, 'rgba(255,130,165,ALFA)');
+        if (p > 0.4){
+          var lz = (p - 0.4) / 0.6;
+          for (var k2 = 0; k2 < 8; k2++){
+            var po = k2 / 7;
+            corazon(ax + (bx - ax) * po, cy + Math.sin(po * 3.14 + t * 2.2) * H * 0.045 * lz,
+              5 + 5 * Math.sin(po * 3.14), Math.sin(t + k2) * 0.3, '#ff6c8c', lz * 0.8);
+          }
+        }
+      } else {
+        var mp = Math.min(1, (t - FUSION) / 1.2);
+        var av = suave(Math.min(1, (t - VIAJE) / (CARTA - VIAJE)));
+        var mx = W * (0.5 + 0.2 * av), my = cy - H * 0.05 * av + Math.sin(t * 0.7) * H * 0.01;
+        var rm = r * (1 + 0.2 * suave(mp));
+        if (mp < 1){
+          var de = 1 - mp;
+          var fg = ctx.createRadialGradient(mx, my, rm * 0.2, mx, my, rm * (1.8 + mp * 3.4));
+          fg.addColorStop(0, 'rgba(255,255,255,' + (de * 0.9) + ')');
+          fg.addColorStop(0.35, 'rgba(255,170,200,' + (de * 0.5) + ')');
+          fg.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx.fillStyle = fg;
+          ctx.beginPath(); ctx.arc(mx, my, rm * (1.8 + mp * 3.4), 0, 6.3); ctx.fill();
+          ctx.globalAlpha = de * 0.75; ctx.strokeStyle = '#ffd9e4'; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.arc(mx, my, rm * (1 + mp * 3), 0, 6.3); ctx.stroke();
+          ctx.globalAlpha = 1;
+        }
+        if (!estallado){
+          estallado = true;
+          estallar(mx, my);
+        }
+        anillo(mx, my, rm, 0.2 + 0.65 * suave(mp));
+        dibujarPlaneta(texUno, mx, my, rm, -t * 0.14, 'rgba(255,150,210,ALFA)');
+        for (var o = 0; o < 3; o++){
+          var oa = t * 0.9 + o * 2.09;
+          corazon(mx + Math.cos(oa) * rm * 1.95, my + Math.sin(oa) * rm * 0.5, 7, Math.sin(oa) * 0.4, '#ffd9e4', 0.7);
+        }
+        if (!reducido && t > VIAJE && Math.random() < dt * 7){
+          chispa(mx - rm * 0.9, my + (Math.random() - 0.5) * rm, -90 - Math.random() * 70,
+            (Math.random() - 0.5) * 40, Math.random() < 0.4 ? 'fresa' : 'corazon');
+        }
+      }
+    }
+
+    if (fase === 'carta' && !reducido && Math.random() < dt * 1.5) lanzarFuego();
+    for (var cr = cohetes.length - 1; cr >= 0; cr--){
+      var co = cohetes[cr];
+      co.y += co.vy * dt; co.vy += 420 * dt;
+      ctx.globalAlpha = 0.9; ctx.fillStyle = '#ffd9e4';
+      ctx.beginPath(); ctx.arc(co.x, co.y, 2.2, 0, 6.3); ctx.fill();
+      if (co.vy > -40 || co.y < co.meta){ estallar(co.x, co.y); cohetes.splice(cr, 1); }
+    }
+    ctx.globalAlpha = 1;
+
+    for (var q = chispas.length - 1; q >= 0; q--){
+      var pa = chispas[q];
+      pa.vida += dt;
+      if (pa.vida > pa.max){ chispas.splice(q, 1); continue; }
+      pa.x += pa.vx * dt; pa.y += pa.vy * dt;
+      pa.vx *= 0.975; pa.vy = pa.vy * 0.975 + (fase === 'carta' ? 55 : -8) * dt;
+      pa.rot += pa.giro * dt;
+      var alf = Math.min(1, pa.vida / 0.25) * (1 - pa.vida / pa.max);
+      if (pa.tipo === 'fresa') fresa(pa.x, pa.y, pa.s / 9, pa.rot * 0.35, alf);
+      else corazon(pa.x, pa.y, pa.s, pa.rot * 0.35, '#ff7d9b', alf * 0.95);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /* ---------------- frases del espacio ---------------- */
+  var elFrase = document.getElementById('frase');
+  var guion = [
+    [0.4, 4.6, 'Dos planetas que viajan solos por el mismo cielo.'],
+    [4.6, 8.6, 'A veces se alejan sin darse cuenta.'],
+    [8.6, 12.5, 'Yo no quiero que nos pase eso.'],
+    [12.5, 17.2, 'Prefiero mil veces encontrarnos.'],
+    [17.2, 21, 'Te quiero mucho. Lee esto, por favor.']
+  ];
+  function sincronizar(){
+    if (fase !== 'espacio'){ elFrase.classList.remove('viva'); return; }
+    var txt = '';
+    for (var g2 = 0; g2 < guion.length; g2++){
+      if (t >= guion[g2][0] && t < guion[g2][1]) txt = guion[g2][2];
+    }
+    if (txt){
+      if (elFrase.textContent !== txt){ elFrase.textContent = txt; }
+      elFrase.classList.add('viva');
+    } else {
+      elFrase.classList.remove('viva');
+    }
+  }
+
+  var escGatos = document.getElementById('escena-gatos');
+  var escCarta = document.getElementById('escena-carta');
+
+  function alEspacio(){
+    if (!texRosa) prepararTexturas();
+    fase = 'espacio'; t = 0; estallado = false; chispas = [];
+    escGatos.hidden = true; escCarta.hidden = true;
+    if (reducido){ t = CARTA; alaCarta(); }
+  }
+  function alaCarta(){
+    fase = 'carta';
+    elFrase.classList.remove('viva');
+    escCarta.hidden = false;
+    for (var b2 = 0; b2 < 3; b2++) lanzarFuego();
+    window.scrollTo(0, 0);
+  }
+
+  function paso(ahora){
+    var dt = Math.min(0.05, (ahora - ultimo) / 1000 || 0.016);
+    ultimo = ahora;
+    t += dt;
+    if (fase === 'espacio' && t >= CARTA) alaCarta();
+    pintar(dt);
+    sincronizar();
+    requestAnimationFrame(paso);
+  }
+
+  /* ---------------- carta ---------------- */
+  var nombre = document.getElementById('nombre');
+  var linea = document.getElementById('nombre-linea');
+  function pintarNombre(){
+    var v = nombre.value.trim();
+    linea.textContent = v ? 'Para ' + v : 'Para ti';
+    try { localStorage.setItem('nombre-perdon', v); } catch (e) {}
+  }
+  try { var gv = localStorage.getItem('nombre-perdon'); if (gv) nombre.value = gv; } catch (e) {}
+  pintarNombre();
+  nombre.addEventListener('input', pintarNombre);
+
+  var aviso = document.getElementById('aviso');
+  document.getElementById('copiar').addEventListener('click', function(){
+    var v = nombre.value.trim();
+    var texto = (v ? v + ', p' : 'P') + 'erdóname. No sé qué pude haber hecho para ponerte de mal humor, '
+      + 'pero perdóname igual: lo que menos quiero en esta vida es eso. Quiero que estés feliz, y que estés feliz conmigo, '
+      + 'no cada uno por su lado aguantando lo que no nos decimos. Si hago estas cosas por ti no es para que me quieras, '
+      + 'es para que sepas que yo te quiero mucho.';
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(texto).then(function(){
+        aviso.textContent = 'Copiado, ya puedes enviárselo.';
+      }).catch(function(){ aviso.textContent = texto; });
+    } else { aviso.textContent = texto; }
+  });
+  document.getElementById('repetir').addEventListener('click', function(){
+    fase = 'gatos'; i = 0; t = 0; estallado = false; chispas = []; cohetes = [];
+    escCarta.hidden = true; escGatos.hidden = false;
+    pintarPaso();
+    window.scrollTo(0, 0);
+  });
+
+  window.addEventListener('resize', medir);
+  medir();
+  texNebula = nebulosa();
+  requestAnimationFrame(function(x){ ultimo = x; paso(x); });
+})();
+</script>
